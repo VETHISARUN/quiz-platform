@@ -1,9 +1,12 @@
 
 import os
 from flask import Flask, render_template, request, session, redirect, url_for
+import secrets
+import random
+
 
 app = Flask(__name__)
-
+app.secret_key = secrets.token_hex(16)
 
 # Quiz questions database
 QUESTIONS = [
