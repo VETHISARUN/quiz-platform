@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify
-import random
-import secrets
 
-app = Flask(__name__)
-app.secret_key = secrets.token_hex(16)
+import os
+from flask import Flask, render_template, request, session, redirect, url_for
+
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), '../templates')
+app = Flask(__name__, template_folder=TEMPLATE_DIR)
 
 # Quiz questions database
 QUESTIONS = [
