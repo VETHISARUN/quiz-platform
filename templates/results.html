@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}Results - Quiz Platform{% endblock %}
+
+{% block content %}
+<div class="results-header">
+    <h1>🎉 Quiz Complete, {{ user_name }}!</h1>
+</div>
+
+<div class="score-display">
+    <div class="score-circle">
+        <div class="score-inner">
+            <div class="score-number">{{ score }}</div>
+            <div class="score-total">/ {{ total }}</div>
+        </div>
+        <svg class="score-ring" width="200" height="200">
+            <defs>
+                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#FFD700"/>
+                    <stop offset="100%" stop-color="#FFA500"/>
+                </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="90" class="score-bg"></circle>
+            <circle cx="100" cy="100" r="90" class="score-progress" 
+                    style="stroke-dasharray: {{ (score / total) * 565.48 }}, 565.48"></circle>
+        </svg>
+    </div>
+    
+    <div class="score-info">
+        {% set percentage = (score / total * 100) | round | int %}
+        <h2 style="color: white; margin-bottom: 1rem;">
+            {% if percentage >= 90 %}
+                🌟 Outstanding! {{ percentage }}%
+            {% elif percentage >= 80 %}
+                🎯 Excellent! {{ percentage }}%
+            {% elif percentage >= 70 %}
+                👍 Great Job! {{ percentage }}%
+            {% elif percentage >= 60 %}
+                😊 Good Work! {{ percentage }}%
+            {% else %}
+                💪 Keep Trying! {{ percentage }}%
+            {% endif %}
+        </h2>
+        
+        <p style="color: rgba(255, 255, 255, 0.8); font-size: 1.1rem; line-height: 1.6;">
+            {% if percentage >= 90 %}
+                Incredible! You're a true knowledge master! 🧠✨
+            {% elif percentage >= 80 %}
+                Fantastic performance! You really know your stuff! 🎊
+            {% elif percentage >= 70 %}
+                Well done! You have solid knowledge across topics! 👏
+            {% elif percentage >= 60 %}
+                Nice effort! A bit more practice and you'll be amazing! 📚
+            {% else %}
+                Don't worry! Every expert was once a beginner. Try again! 🚀
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="results-details">
+    <h3 style="color: #FFD700; margin-bottom: 1.5rem; text-align: center;">
+        <i class="fas fa-clipboard-list"></i> Detailed Results
+    </h3>
+    
+    <div class="questions-review">
+        {% for answer in answers %}
+        <div class="question-result {% if answer.is_correct %}correct{% else %}incorrect{% endif %}">
+            <div class="question-header">
+                <span class="question-num">Q{{ loop.index }}</span>
+                <span class="result-icon">
+                    {% if answer.is_correct %}
+                        <i class="fas fa-check-circle"></i>
+                    {% else %}
+                        <i class="fas fa-times-circle"></i>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="question-content">
+                <p class="question-text">{{ answer.question }}</p>
+                
+                <div class="answer-info">
+                    <div class="correct-answer">
+                        <strong>Correct Answer:</strong>
+                        <span class="right-answer">{{ ['A', 'B', 'C', 'D'][answer.correct] }}</span>
+                    </div>
+                    {% if not answer.is_correct %}
+                    <div class="your-answer">
+                        <strong>Your Answer:</strong>
+                        <span class="wrong-answer">{{ ['A', 'B', 'C', 'D'][answer.selected] }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="action-buttons">
+    <a href="/restart" class="btn btn-primary">
+        <i class="fas fa-redo"></i> Take Another Quiz
+    </a>
+    <button onclick="shareResults()" class="btn btn-secondary">
+        <i class="fas fa-share"></i> Share Results
+    </button>
+</div>
+
+<style>
+.results-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    animation: celebrateIn 1s ease-out;
+}
+
+@keyframes celebrateIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(30px);
+    }
+    60% {
+        transform: scale(1.1) translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.score-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.score-circle {
+    position: relative;
+    margin-bottom: 2rem;
+    animation: scoreReveal 2s ease-out 0.5s both;
+}
+
+@keyframes scoreReveal {
+    from {
+        opacity: 0;
+        transform: scale(0) rotate(180deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.score-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 2;
+}
+
+.score-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.score-total {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: -0.5rem;
+}
+
+.score-ring {
+    transform: rotate(-90deg);
+}
+
+.score-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 12;
+}
+
+.score-progress {
+    fill: none;
+    stroke: url(#scoreGradient);
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dasharray 2s ease-out 1s;
+}
+
+.score-info {
+    text-align: center;
+    max-width: 400px;
+}
+
+.results-details {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.questions-review {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.questions-review::-webkit-scrollbar {
+    width: 6px;
+}
+
+.questions-review::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.questions-review::-webkit-scrollbar-thumb {
+    background: rgba(255, 215, 0, 0.5);
+    border-radius: 3px;
+}
+
+.question-result {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid;
+    animation: slideInResult 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+.question-result.correct {
+    border-color: #4ECDC4;
+}
+
+.question-result.incorrect {
+    border-color: #FF6B6B;
+}
+
+@keyframes slideInResult {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.question-num {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.result-icon {
+    font-size: 1.2rem;
+}
+
+.question-result.correct .result-icon {
+    color: #4ECDC4;
+}
+
+.question-result.incorrect .result-icon {
+    color: #FF6B6B;
+}
+
+.question-text {
+    color: white;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.answer-info {
+    font-size: 0.9rem;
+}
+
+.your-answer, .correct-answer {
+    margin-bottom: 0.25rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.wrong-answer {
+    color: #FF6B6B;
+    background: rgba(255, 107, 107, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.right-answer {
+    color: #4ECDC4;
+    background: rgba(78, 205, 196, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #4ECDC4, #44A08D);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #26C6DA, #2E7D8A);
+}
+
+@media (max-width: 768px) {
+    .score-number {
+        font-size: 2.5rem;
+    }
+    
+    .score-total {
+        font-size: 1.2rem;
+    }
+    
+    .results-details {
+        padding: 1.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        max-width: 250px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate question results with stagger
+    const questionResults = document.querySelectorAll('.question-result');
+    questionResults.forEach((result, index) => {
+        result.style.animationDelay = `${index * 0.1}s`;
+    });
+});
+
+function shareResults() {
+    const score = {{ score }};
+    const total = {{ total }};
+    const percentage = Math.round((score / total) * 100);
+    const name = "{{ user_name }}";
+    
+    const text = `🎯 I just scored ${score}/${total} (${percentage}%) on the Ultimate Quiz Challenge! Can you beat my score? 🧠✨`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Quiz Platform Results',
+            text: text,
+            url: window.location.origin
+        }).catch(console.error);
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(text + ' ' + window.location.origin).then(() => {
+            alert('Results copied to clipboard! 📋');
+        }).catch(() => {
+            alert('Share text: ' + text);
+        });
+    }
+}
+</script>
+{% endblock %}
