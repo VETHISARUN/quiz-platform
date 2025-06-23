@@ -2,8 +2,8 @@
 import os
 from flask import Flask, render_template, request, session, redirect, url_for
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), '../templates')
-app = Flask(__name__, template_folder=TEMPLATE_DIR)
+app = Flask(__name__)
+
 
 # Quiz questions database
 QUESTIONS = [
